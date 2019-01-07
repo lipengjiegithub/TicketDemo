@@ -1,0 +1,9 @@
+body {
+	background-color: red;
+}
+
+.img {
+	width: 300px;
+	height: 300px;
+	background: url(./static/img/test.ed1e6a9.jpg)
+}
