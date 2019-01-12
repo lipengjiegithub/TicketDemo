@@ -3,6 +3,7 @@ package com.example.login.captcha;
 import com.alibaba.fastjson.JSONObject;
 import com.example.env.URLConfig;
 import com.example.utils.HttpUtils;
+import net.dongliu.requests.RawResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jsoup.Connection;
@@ -21,28 +22,35 @@ public class Captcha {
         params.put("login_site", "E");
         params.put("module", "login");
         params.put("rand", "sjrand");
-        Connection.Response resp = HttpUtils.send(URLConfig.GET_CODE, params);
-        this.data = resp.bodyAsBytes();
+        RawResponse resp = HttpUtils.send(URLConfig.GET_CODE, params);
+        this.data = resp.readToBytes();
         return this;
     }
 
     public Captcha answer() {
+        new AutoRecognize().recognize(this.data);
         this.answer = new ManualRecognize().recognize(this.data);
         return this;
     }
 
-    public boolean check() {
+    public Result check() {
         Map<String, String> params = new HashMap<String, String>();
         params.put("answer", this.answer);
         params.put("login_site", "E");
         params.put("rand", "sjrand");
-        Connection.Response resp = HttpUtils.send(URLConfig.CHECK_CODE, params);
-        JSONObject result = HttpUtils.resp2JsonObj(resp);
+        RawResponse resp = HttpUtils.send(URLConfig.CHECK_CODE, params);
+        JSONObject result = JSONObject.parseObject(resp.readToText());
         log.error(result.get("result_message"));
-        if ("4".equals(result.get("result_code"))) {
-            return true;
-        }else {
-            return false;
+        return new Result("4".equals(result.get("result_code")), this.answer);
+    }
+
+    public static class Result {
+        public boolean success;
+        public String position;
+
+        public Result(boolean success, String position) {
+            this.success = success;
+            this.position = position;
         }
     }
 

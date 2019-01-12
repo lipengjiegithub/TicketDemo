@@ -13,6 +13,7 @@ public class OrderInfo {
     public String purpose_codes;
     public String tour_flag;
     public String train_location;
+    public String key_check_isChange;
     public String leftTicketStr;
     public QueryLeftNewDetailDTO queryLeftNewDetailDTO;
     public QueryLeftTicketRequestDTO queryLeftTicketRequestDTO;
@@ -35,10 +36,15 @@ public class OrderInfo {
         return seats;
     }
 
-    public String getTranDate() throws ParseException {
+    public String getTranDate() {
         SimpleDateFormat sf = new SimpleDateFormat();
         sf.applyPattern("yyyyMMdd");
-        Date date = sf.parse(queryLeftTicketRequestDTO.train_date);
+        Date date = null;
+        try {
+            date = sf.parse(queryLeftTicketRequestDTO.train_date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         sf = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ss 'GMT+0800' (中国标准时间)", Locale.ENGLISH);
         return sf.format(date);
     }

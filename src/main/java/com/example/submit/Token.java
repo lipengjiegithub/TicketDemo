@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.example.entity.OrderInfo;
 import com.example.env.URLConfig;
 import com.example.utils.HttpUtils;
+import net.dongliu.requests.RawResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -14,34 +15,35 @@ import java.util.regex.Pattern;
 public class Token {
 
     private static Log log = LogFactory.getLog(Token.class);
-    private String html = "";
 
-    public Token() {
+
+    public String getHtml() {
         log.debug("获取Token页面");
+        String html = "";
         try {
-//            this.html = testHTML();
-            this.html = HttpUtils.send(URLConfig.DC, null).parse().html();
-            this.html = HttpUtils.send(URLConfig.DC, null).parse().html();
+            RawResponse response = HttpUtils.send(URLConfig.ORDER_INFO, null);
+            html = response.readToText();
         } catch (Exception e) {
-            e.printStackTrace();
             log.error("获取Token页面异常", e);
+            return html;
         }
         log.debug("Token页面加载完毕");
+        return html;
     }
 
-    public String getRepeatToken() {
+    public String getRepeatToken(String html) {
         String reg = "var +globalRepeatSubmitToken ?= ?'(.*)'";
-        return reg(reg);
+        return reg(reg, html);
     }
 
-    public OrderInfo getTicketInfo() {
+    public OrderInfo getTicketInfo(String html) {
         String reg = "var +ticketInfoForPassengerForm ?= ?(.*);";
-        return JSONObject.parseObject(reg(reg), OrderInfo.class);
+        return JSONObject.parseObject(reg(reg, html), OrderInfo.class);
     }
 
-    private String reg(String reg) {
+    private String reg(String reg, String html) {
         try {
-            Matcher matcher = Pattern.compile(reg).matcher(this.html);
+            Matcher matcher = Pattern.compile(reg).matcher(html);
             if(matcher.find() && matcher.groupCount() > 0) {
                 return matcher.group(1);
             };
@@ -68,9 +70,11 @@ public class Token {
 
     public static void main(String[] args) throws Exception{
         Token token = new Token();
-        String result = token.getRepeatToken();
+
+        String html = token.testHTML();
+        String result = token.getRepeatToken(html);
         System.out.println(result);
-        OrderInfo orderInfo = token.getTicketInfo();
+        OrderInfo orderInfo = token.getTicketInfo(html);
         System.out.println(orderInfo);
 
 

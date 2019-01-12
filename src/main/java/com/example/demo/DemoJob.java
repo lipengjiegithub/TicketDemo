@@ -1,19 +1,20 @@
 package com.example.demo;
 
+import com.alibaba.fastjson.JSONObject;
+import com.example.login.Login;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
-@Component
 public class DemoJob implements Job {
-
-    @Value("${test:default}")
-    private String name;
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        System.out.println("Exec....."+name);
+        JSONObject obj = Login.myOrder();
+        if(!obj.isEmpty()) {
+            System.out.println("有订单未支付");
+        }else {
+            System.out.println("没有未支付的订单");
+        }
     }
 }

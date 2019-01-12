@@ -6,12 +6,18 @@ import com.example.env.URLConfig;
 import com.example.login.captcha.Captcha;
 import com.example.utils.Assert;
 import com.example.utils.HttpUtils;
-import org.jsoup.Connection;
+import com.example.utils.TrainUtils;
+import net.dongliu.requests.RawResponse;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Login {
+
+    private static Log log = LogFactory.getLog(Login.class);
 
     private String username;
     private String password;
@@ -27,8 +33,52 @@ public class Login {
      * @return flag
      */
     public boolean login() {
-        boolean flag = captcha.get().answer().check();
-        return Assert.flag(flag, "登录成功!", "登录失败!");
+        Captcha.Result result = captcha.get().answer().check();
+        Assert.flag(result.success, "验证码识别成功!", "验证码识别失败!");
+        if(!result.success) return false;
+        Map<String, String> params = new LinkedHashMap<>();
+
+        params.put("username", this.username);
+        params.put("password", this.password);
+        params.put("appid", "otn");
+        params.put("answer", result.position);
+        RawResponse resp = HttpUtils.send(URLConfig.LOGIN, params);
+        JSONObject obj = JSONObject.parseObject(resp.readToText());
+
+
+        if(obj.getIntValue("result_code") == 0) {
+            Login.veify();
+
+            return true;
+        }else {
+            log.info(String.format("登录失败,信息:%s", obj.getString("messages")));
+            return false;
+        }
+    }
+
+    /**
+     * 验证
+     */
+    public static void veify() {
+        Map<String, String> params = new LinkedHashMap<>();
+        // 验证
+        params.put("appid", "otn");
+        RawResponse resp = HttpUtils.send(URLConfig.UAMTK, params);
+        JSONObject obj = JSONObject.parseObject(resp.readToText());
+        // {"result_message":"验证通过","result_code":0,"apptk":null,"newapptk":"t3c0lZ6ehFihHJjfX8Ekxh_xPwBUrXlBwPzpLYEaOyo641210"}
+        log.info(obj.getString("result_message"));
+
+        String tk = obj.getString("newapptk");
+
+        params.clear();
+        params.put("tk", tk);
+        resp = HttpUtils.send(URLConfig.UAMAUTH_CLIENT, params);
+        obj = JSONObject.parseObject(resp.readToText());
+        // {"apptk":"V32PLPcw1pccUfH6OBF2BkqCAeB5EViwNFxg5zheJ4Yaf1210","result_message":"验证通过","result_code":0,"username":"李鹏杰"}
+        log.info(obj.getString("result_message"));
+
+        log.info(String.format("%s,欢迎:%s", obj.getString("result_message"), obj.getString("username")));
+        resp = HttpUtils.send(URLConfig.INIT_API, null);
     }
 
     /**
@@ -36,9 +86,9 @@ public class Login {
      * @return 用户信息
      */
     public User init() {
-        Map<String, String> params = new HashMap<String, String>();
-        Connection.Response resp = HttpUtils.send(URLConfig.INIT, params);
-        JSONObject result = HttpUtils.resp2JsonObj(resp);
+        RawResponse resp = HttpUtils.send(URLConfig.INIT, null);
+        JSONObject result = JSONObject.parseObject(resp.readToText());
+        System.out.println(result.toJSONString());
         boolean flag = result.getBoolean("status");
         flag = Assert.flag(flag, "初始化成功!", "初始化失败!");
         User user = new User();
@@ -48,14 +98,12 @@ public class Login {
         return user;
     }
 
-    public void myOrder() {
+    public static JSONObject myOrder() {
         Map<String, String> params = new HashMap<String, String>();
         params.put("_json_att", "");
-        Connection.Response resp = HttpUtils.send(URLConfig.MY_ORDER, params);
-        JSONObject obj = HttpUtils.resp2JsonObj(resp);
+        RawResponse resp = HttpUtils.send(URLConfig.MY_ORDER, params);
+        JSONObject obj = TrainUtils.parse(resp);
 
-        boolean status = obj.getBoolean("status");
-        String[] message = (String[])obj.get("messages");
-        JSONObject data = obj.getJSONObject("data");
+        return obj;
     }
 }

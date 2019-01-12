@@ -9,8 +9,9 @@ import com.example.env.ConfigKey;
 import com.example.env.URLConfig;
 import com.example.utils.ConfigUtils;
 import com.example.utils.HttpUtils;
+import com.example.utils.TrainUtils;
+import net.dongliu.requests.RawResponse;
 import org.apache.commons.lang3.ArrayUtils;
-import org.jsoup.Connection;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -58,8 +59,8 @@ public class Query {
         params.put("leftTicketDTO.from_station", CityUtils.name2Code(startStation));
         params.put("leftTicketDTO.to_station", CityUtils.name2Code(endStation));
         params.put("purpose_codes", passengerType.getCode());
-        Connection.Response resp = HttpUtils.send(URLConfig.QUERY, params);
-        JSONObject obj = HttpUtils.resp2JsonObj(resp);
+        RawResponse resp = HttpUtils.send(URLConfig.QUERY, params);
+        JSONObject obj = JSONObject.parseObject(resp.readToText());
         return parse(obj, passengerType);
     }
 
@@ -217,7 +218,7 @@ public class Query {
                     Query.chooseSeat(ticket, seatTypes);
                 }
 
-                Query.printTickets(tickets);
+                TrainUtils.print(tickets);
             }
 
             try {

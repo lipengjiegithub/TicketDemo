@@ -32,14 +32,4 @@ public class Quartz {
                 .build();
     }
 
-    @Bean
-    public Trigger createTrigger1() throws Exception{
-        return TriggerBuilder
-                .newTrigger()
-                .forJob(createJobDetail())
-                .withIdentity("trigger2", "trigger1Group1")
-                .withSchedule(CronScheduleBuilder.cronSchedule("* * 12 * * ?"))
-                .build();
-    }
-
 }
