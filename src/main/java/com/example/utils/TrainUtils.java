@@ -14,19 +14,22 @@ import java.util.List;
 
 public class TrainUtils {
 
-    private static Log log = LogFactory.getLog(Submit.class);
+    private static Log log = LogFactory.getLog(TrainUtils.class);
 
     public static JSONObject parse(RawResponse resp) {
         JSONObject obj = new JSONObject();
+        String result = resp.readToText();
         try {
-            obj = JSONObject.parseObject(resp.readToText());
+
+            if(result == null||result.indexOf("<!DOCTYPE") != -1) return new JSONObject();
+            obj = JSONObject.parseObject(result);
 
             if(obj == null) return new JSONObject();
 
             boolean status = obj.getBoolean("status");
             JSONArray message = obj.getJSONArray("messages");
 
-            if(status) return obj.getJSONObject("data");
+            if(status) return obj.getJSONObject("data") == null?new JSONObject(): obj.getJSONObject("data");
 
             log.info(message.toString());
 

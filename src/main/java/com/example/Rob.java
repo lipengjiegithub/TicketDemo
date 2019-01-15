@@ -8,6 +8,8 @@ import com.example.query.CityUtils;
 import com.example.query.Query;
 import com.example.submit.Submit;
 import com.example.utils.ConfigUtils;
+import com.example.utils.PrintUtils;
+import com.example.utils.TrainUtils;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -68,8 +70,8 @@ public class Rob {
 
             concurrentTickets.addAll(tickets);
 
-            Query.printTickets(tickets);
-
+//            Query.printTickets(tickets);
+            TrainUtils.print(tickets);
         }
 
         try {
@@ -94,6 +96,14 @@ public class Rob {
         Executors.newScheduledThreadPool(10).scheduleAtFixedRate(new Thread(() -> Rob.loop()), 0, INTERVAL, TimeUnit.MILLISECONDS);
     }
 
+    public static void verify() {
+        Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new Thread(() -> Login.verify()), 0, 6000, TimeUnit.MILLISECONDS);
+    }
+
+    public static void myOrder() {
+        Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new Thread(() -> Login.myOrder()), 0, 6000, TimeUnit.MILLISECONDS);
+    }
+
 
     public static void main(String[] args) {
         Rob.login();
@@ -101,6 +111,10 @@ public class Rob {
         Rob.query();
 
         Rob.submit();
+
+        Rob.verify();
+
+        Rob.myOrder();
     }
 
 }

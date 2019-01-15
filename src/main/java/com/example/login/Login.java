@@ -47,7 +47,7 @@ public class Login {
 
 
         if(obj.getIntValue("result_code") == 0) {
-            Login.veify();
+            Login.verify();
 
             return true;
         }else {
@@ -59,14 +59,14 @@ public class Login {
     /**
      * 验证
      */
-    public static void veify() {
+    public static void verify() {
         Map<String, String> params = new LinkedHashMap<>();
         // 验证
         params.put("appid", "otn");
         RawResponse resp = HttpUtils.send(URLConfig.UAMTK, params);
         JSONObject obj = JSONObject.parseObject(resp.readToText());
         // {"result_message":"验证通过","result_code":0,"apptk":null,"newapptk":"t3c0lZ6ehFihHJjfX8Ekxh_xPwBUrXlBwPzpLYEaOyo641210"}
-        log.info(obj.getString("result_message"));
+
 
         String tk = obj.getString("newapptk");
 
@@ -75,7 +75,6 @@ public class Login {
         resp = HttpUtils.send(URLConfig.UAMAUTH_CLIENT, params);
         obj = JSONObject.parseObject(resp.readToText());
         // {"apptk":"V32PLPcw1pccUfH6OBF2BkqCAeB5EViwNFxg5zheJ4Yaf1210","result_message":"验证通过","result_code":0,"username":"李鹏杰"}
-        log.info(obj.getString("result_message"));
 
         log.info(String.format("%s,欢迎:%s", obj.getString("result_message"), obj.getString("username")));
         resp = HttpUtils.send(URLConfig.INIT_API, null);
@@ -103,7 +102,11 @@ public class Login {
         params.put("_json_att", "");
         RawResponse resp = HttpUtils.send(URLConfig.MY_ORDER, params);
         JSONObject obj = TrainUtils.parse(resp);
-
+        if(obj != null&& !obj.isEmpty()) {
+            log.info(obj);
+        }else {
+            log.info("当前没有未支付订单");
+        }
         return obj;
     }
 }

@@ -1,13 +1,14 @@
-package com.example.demo;
+package com.example.task;
 
-import com.example.login.Login;
+import com.example.Rob;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
-public class Verify implements Job {
+public class SubmitTask implements Job
+{
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        Login.veify();
+        Rob.submit();
     }
 }

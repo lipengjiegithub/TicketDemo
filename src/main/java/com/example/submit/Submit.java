@@ -30,7 +30,7 @@ public class Submit {
      * 检查当前用户
      */
     public boolean checkUser() {
-        log.debug("检查当前用户");
+        log.info("检查当前用户");
         Map<String, String> params = new LinkedHashMap<>();
         params.put("_json_att", "");
         try {
@@ -38,7 +38,7 @@ public class Submit {
             JSONObject obj = TrainUtils.parse(resp);
             return true;
         }catch (Exception e) {
-            log.error(e);
+            log.error("checkUser", e);
             return false;
         }
     }
@@ -48,7 +48,7 @@ public class Submit {
      */
     public boolean submitOrderRequest(Ticket ticket) {
 
-        log.debug("预订车票");
+        log.info("预订车票");
         Map<String, String> params = new LinkedHashMap<>();
         params.put("secretStr", HttpUtils.decodeStr(ticket.secretStr));
         params.put("train_date", ConfigUtils.getStr(ConfigKey.TRAIN_DATE));
@@ -75,7 +75,7 @@ public class Submit {
      */
     private List<Passenger> queryPassenger(String repeatToken) {
 
-        log.debug("获取乘客信息");
+        log.info("获取乘客信息");
 
         List<Passenger> passengers = new ArrayList<>();
 
@@ -128,7 +128,7 @@ public class Submit {
 
     private boolean checkOrderInfo(Ticket ticket, OrderInfo orderInfo, Passenger passenger, String repeatToken) {
 
-        log.debug("检查订单信息");
+        log.info("检查订单信息");
         Map<String, String> params = new LinkedHashMap<>();
         params.put("cancel_flag", "2");
         params.put("bed_level_order_num", "000000000000000000000000000000");
@@ -145,7 +145,7 @@ public class Submit {
         JSONObject obj = TrainUtils.parse(resp);
 
         if(!obj.isEmpty()) {
-            int submitStatus = obj.getIntValue("submitStatus");
+            boolean submitStatus = obj.getBoolean("submitStatus");
 
 //            canChooseBeds: "N"
 //            canChooseSeats: "Y"
@@ -155,11 +155,11 @@ public class Submit {
 //            isCanChooseMid: "N"
 //            smokeStr: ""
 //            submitStatus: true
+            return submitStatus;
 
+        }else {
+            return false;
         }
-
-        return true;
-
     }
 
     /**
@@ -171,7 +171,7 @@ public class Submit {
      */
     private void getQueueCount(Ticket ticket, OrderInfo orderInfo, String repeatToken) {
 
-        log.debug("查询排队信息");
+        log.info("查询排队信息");
         Map<String, String> params = new LinkedHashMap<>();
         params.put("train_date", orderInfo.getTranDate());
         params.put("train_no", orderInfo.queryLeftNewDetailDTO.train_no);
@@ -194,7 +194,7 @@ public class Submit {
             int tic = obj.getIntValue("ticket");
 
             // ticket: "738,168"
-            log.debug(String.format("当前排队人数:%s, 剩余车票数量:%s", count, tic));
+            log.info(String.format("当前排队人数:%s, 剩余车票数量:%s", count, tic));
         }
 
     }
@@ -222,7 +222,7 @@ public class Submit {
 
     private boolean canChooseSeat(Ticket ticket, OrderInfo orderInfo) {
         if (orderInfo.getCanBySeatType().isEmpty()) {
-            log.error("当前车次无可预订的车票");
+            log.warn("当前车次无可预订的车票");
             return false;
         }else {
 
@@ -232,7 +232,7 @@ public class Submit {
 
             if(flag) return true;
 
-            log.fatal(String.format("您选的%s在车次%s中无剩余车票", ticket.seatType.getName(), ticket.trainNo));
+            log.warn(String.format("您选的%s在车次%s中无剩余车票", ticket.seatType.getName(), ticket.trainNo));
             return false;
 
         }
@@ -243,8 +243,8 @@ public class Submit {
         boolean ok = true;
 
         try {
-            ok = checkUser();
-            if(!ok) return;
+//            ok = checkUser();
+//            if(!ok) return;
 
             ok = submitOrderRequest(ticket);
             if(!ok) return;
@@ -300,11 +300,11 @@ public class Submit {
                         return "";
                     }
                 }
-                log.info(String.format("未出票,订单排队中...预计等待时间:%s%s", waitTime > 60? waitTime/60: waitTime, waitTime > 60? "分钟": "秒"));
+                log.info(String.format("未出票,订单排队中...预计等待时间:%s分钟%s秒", waitTime / 60, waitTime % 60));
                 try {
                     Thread.sleep(waitTime % 60 - 1);
                 } catch (InterruptedException e) {
-                    log.error(e);
+                    log.error("wait", e);
                 }
             }
         }

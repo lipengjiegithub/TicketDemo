@@ -10,7 +10,6 @@ import net.dongliu.requests.Requests;
 import net.dongliu.requests.Session;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jsoup.Connection;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -63,20 +62,16 @@ public class HttpUtils {
                     .keepAlive(true)
                     .send();
 
+            if(response.statusCode() == 302) {
+                String loaction = response.getHeader("Location");
+                info.url = loaction;
+                send(info, params);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             log.error(String.format("请求%s异常",info.url));
         }
         return response;
-    }
-
-    public static JSONObject resp2JsonObj(Connection.Response resp) {
-        return JSONObject.parseObject(resp.header("Content-Type", "application/json;charset=UTF-8").body());
-    }
-
-
-    public static JSONArray resp2JsonArr(Connection.Response resp) {
-        return JSONArray.parseArray(resp.header("Content-Type", "application/json;charset=UTF-8").body());
     }
 
     public static void showImage(InputStream in) throws Exception{

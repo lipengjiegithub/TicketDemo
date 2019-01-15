@@ -8,12 +8,25 @@ import net.dongliu.requests.Requests;
 import net.dongliu.requests.Session;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.GzipCompressingEntity;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import sun.misc.BASE64Encoder;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.*;
 
 
 // 自动识别
@@ -51,9 +64,10 @@ public class AutoRecognize implements Recognize {
         params.clear();
         params.put("=", "");
         params.put("check", check);
-        params.put("img_buf", base64);
+        params.put("img_buf", URLEncoder.encode(base64));
         params.put("logon", "1");
         params.put("type", "D");
+
 
         headers.clear();
         headers.put("Content-Type", "text/plain");

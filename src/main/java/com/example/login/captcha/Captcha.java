@@ -2,11 +2,11 @@ package com.example.login.captcha;
 
 import com.alibaba.fastjson.JSONObject;
 import com.example.env.URLConfig;
+import com.example.utils.Assert;
 import com.example.utils.HttpUtils;
 import net.dongliu.requests.RawResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jsoup.Connection;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +28,7 @@ public class Captcha {
     }
 
     public Captcha answer() {
-        new AutoRecognize().recognize(this.data);
+//        new AutoRecognize().recognize(this.data);
         this.answer = new ManualRecognize().recognize(this.data);
         return this;
     }
@@ -52,6 +52,12 @@ public class Captcha {
             this.success = success;
             this.position = position;
         }
+    }
+
+    public static void main(String[] args) {
+        Captcha captcha = new Captcha();
+        Captcha.Result result = captcha.get().answer().check();
+        Assert.flag(result.success, "验证码识别成功!", "验证码识别失败!");
     }
 
 }

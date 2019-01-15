@@ -13,10 +13,7 @@ public class PrintUtils {
         System.out.println(StringUtils.rightPad("", rows.length*(width+1), "-"));
         System.out.print("⎢");
         Arrays.stream(rows).forEach(field -> {
-            String str = StringUtils.rightPad("", width);
-            if(include(field) > 0) {
-
-            }
+            String str = StringUtils.rightPad(field, width);
             System.out.print(str);
 //            StringUtils.
 //            String temp = "";
@@ -42,6 +39,24 @@ public class PrintUtils {
         return flg;
     }
 
+    public static String convert(String str) {
+        for (int i = 0; i < str.length(); i++) {
+            if(isChinese(String.valueOf(str.charAt(i)))) {
+                str = str.replace(String.valueOf(str.charAt(i)), "^^");
+            }
+        }
+        return str;
+    }
+
+    public static String back(String newStr, String oldStr) {
+        for (int i = 0; i < oldStr.length(); i++) {
+            if(isChinese(String.valueOf(oldStr.charAt(i)))) {
+                newStr = newStr.replaceAll("\\^{2}?",String.valueOf(oldStr.charAt(i)));
+            }
+        }
+        return newStr;
+    }
+
     public static int include(String str) {
         int count = 0;
         for (int i = 0; i < str.length(); i++) {
@@ -55,7 +70,12 @@ public class PrintUtils {
 
     public static void main(String[] args) {
         PrintUtils.print(10, "a", "b", "b", "b");
-        PrintUtils.print(10, "你好", "d", "b", "b");
+        PrintUtils.print(10, "你好\t", "d", "b", "b");
+
+        System.out.println("你".getBytes());
+        System.out.println("^".getBytes());
+
+        System.out.println(2%60);
 
     }
 

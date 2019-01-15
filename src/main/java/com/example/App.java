@@ -10,6 +10,8 @@ public class App {
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(App.class);
+        boolean flag = Rob.login();
+        if(!flag) return;
         app.run(args);
     }
 }
